@@ -159,7 +159,7 @@ fn write_to_file (shell_path: String, key: &String, var_submission: &String) -> 
   
   // make string to add to end of file
   let export_cmd: String = format!(
-    "export {}=${}:{}", 
+    "\nexport {}=${}:{}", 
     &key, 
     &key, 
     &var_submission
