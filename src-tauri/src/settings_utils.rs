@@ -1,5 +1,12 @@
-use std::{path::{Path, PathBuf}, process::Command, fs, thread::current, ops::Add};
+use std::{path::{Path, PathBuf}, process::Command, fs::{self, File}};
+use serde::{Deserialize, Serialize};
+
 use crate::errors::*;
+
+#[derive(Deserialize, Serialize)]
+struct SettingsFields {
+  shell_profile: String,
+}
 
 /// Check if a file exists, and if not, make one
 /// ### Arguments:
@@ -9,7 +16,8 @@ use crate::errors::*;
 /// Either an empty string if the file exists or was successfully made, or an error message as a String
 /// ### Panics or Unwraps
 /// - when trying to convert an os string into a string
-pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<String, String> {
+/// - when converting the pathbuf into a string
+pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<(), String> {
   
   // check if directory exists, if not make the directory
   if !&path_to_dir.is_dir() {
@@ -57,11 +65,30 @@ pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<S
           ), err.to_string()
       )
     )?;
-    // TODO: MAKE SETTINGS.JSON FILE HERE
+    generate_json(&path_to_dir.to_str().unwrap())?;
     return Err(String::from(empty_settings_err!()));
   }
 
-  return Ok(String::from(""));  
+  return Ok(());  
+}
+
+/// Generates the JSON file with blank fields
+fn generate_json (settings_path: &str) -> Result<(), String> {
+
+  // initialize with empty fields
+  let settings = SettingsFields {
+    shell_profile: String::from(""),
+  };
+
+  // convert to JSON string
+  let json_string = serde_json::to_string(&settings).unwrap();
+  // write JSON string to file
+  let write_result = fs::write(&settings_path, json_string).map_err(
+    |err|
+    err.to_string()
+  );
+  
+  return write_result;
 }
 
 /// Reads the JSON settings file, finds the value for a setting, and returns it
