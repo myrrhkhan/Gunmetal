@@ -50,10 +50,6 @@ pub fn add_var(key: String, var_submission: String) -> Result<String, String> {
     }
     // Try to append variable
     let result = append(&key, &var_submission);
-    // match &result {
-    //   Ok(msg) => println!("From Rust:\n{}", msg),
-    //   Err(err_msg) => println!("From Rust:\n{}", err_msg)
-    // }
     return result;
   } else {
       return Err(String::from("Invalid input, contains null character or is empty."));
