@@ -104,11 +104,18 @@ pub fn gather_setting(settings_path: &str, key: &str) -> Result<String, String> 
     .map_err(|err| construct_err_msg!(settings_read_error!(&settings_path), err.to_string()))?;
   // Parse JSON string, return the resulting string or return error string
   // TODO use key
-  return (serde_json::from_str(&settings_text))
-    .map_err(
-      |err| 
-      construct_err_msg!(
-        json_parse_err!(), 
-        err.to_string()
-      ))?;
+  println!("{}", &settings_text);
+  let settings_status: Result<SettingsFields, serde_json::Error> = (serde_json::from_str(&settings_text));
+    // .map_err(
+    //   |err| 
+    //   construct_err_msg!(
+    //     json_parse_err!(), 
+    //     err.to_string()
+    //   ))?;
+  
+  match settings_status {
+    Ok(settings) => return Ok(settings.shell_profile),
+    Err(error) => return Err(construct_err_msg!(json_parse_err!(), error.to_string()))
+  }
+  
 }

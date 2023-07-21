@@ -121,20 +121,25 @@ fn append(key: &String, var_submission: &String) -> Result<String, String> {
 /// - var_submission
 /// ### Returns:
 /// A success string or an error message string
+/// ### Errors when:
+/// - cannot find home directory
 #[cfg(target_os = "macos")]
 fn append(key: &String, var_submission: &String) -> Result<String, String> {
   
   // establish path to settings directory
 
+  // TODO clean this section up
   let mut path_to_dir: PathBuf = home_dir().unwrap();
   path_to_dir.push(".config/varedit");
+  let mut path_to_settings = home_dir().unwrap();
+  path_to_settings.push(".config/varedit/settings.json");
 
   // make settings file if not already made, return any errors
   check_and_make_file(path_to_dir, "settings.json")?;
 
   // get shell profile path from settings
   let shell_string = gather_setting(
-    "~/.config/varedit/settings.json", 
+    path_to_settings.to_str().unwrap(), 
     "shell_profile"
   )?;
 
