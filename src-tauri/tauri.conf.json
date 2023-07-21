@@ -8,11 +8,18 @@
   },
   "package": {
     "productName": "Environment Variable Editor",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "dialog": {
+        "all": true,
+        "ask": true,
+        "confirm": true,
+        "message": true,
+        "open": true,
+        "save": true
+      }
     },
     "bundle": {
       "active": true,
