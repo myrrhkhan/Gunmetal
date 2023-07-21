@@ -1,4 +1,4 @@
-use std::{path::{Path, PathBuf}, process::Command, fs, thread::current};
+use std::{path::{Path, PathBuf}, process::Command, fs, thread::current, ops::Add};
 use crate::errors::*;
 
 /// Check if a file exists, and if not, make one
@@ -7,19 +7,21 @@ use crate::errors::*;
 /// - filename: name of file
 /// ### Returns
 /// Either an empty string if the file exists or was successfully made, or an error message as a String
+/// ### Panics or Unwraps
+/// - when trying to convert an os string into a string
 pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<String, String> {
   
   // check if directory exists, if not make the directory
   if !&path_to_dir.is_dir() {
 
     // make a path to keep track of working directory
-    let mut current_dir: PathBuf = PathBuf::new();
+    let mut current_dir: String = String::from("");
     
     // iterate through folders and make them
     for folder in &path_to_dir {
 
       // add current folder to working directory
-      let current_dir: PathBuf = current_dir.join(PathBuf::from(folder));
+      current_dir = current_dir + "/" + folder.to_str().unwrap();
       
       // if directory doesn't exist, make it
       if !Path::new(&current_dir).exists() {
@@ -29,13 +31,12 @@ pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<S
           .map_err(
             |err| 
             construct_err_msg!(
-              mkdir_err!(&current_dir.into_os_string().clone().into_string().unwrap()), 
+              mkdir_err!(current_dir), 
               err.to_string()
             )
           )?; // convert error to string and return
       }
 
-      println!("The path {} exists", &current_dir.clone().into_os_string().into_string().unwrap());
     }
   }
   
