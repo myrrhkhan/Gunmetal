@@ -3,7 +3,6 @@ macro_rules! construct_err_msg {
     format!("{}\nFull Error:\n{}", $message, $full_error) 
   }
 }
-// #[macro_export]
 macro_rules! mkdir_err {
     ($dir:expr) => {
         format!(
@@ -58,7 +57,17 @@ macro_rules! empty_settings_err {
 }
 macro_rules! add_var_success {
     () => {
-      "Variable added successfully!"
+      "Variable added successfully!\n\nThe new variable will not show up in this window unless the app is closed and open again, but the variable should be there."
+    };
+}
+macro_rules! var_added_already {
+    () => {
+        "Variable has been added already."
+    };
+}
+macro_rules! invalid_char {
+    () => {
+      "Invalid input, contains null character or is empty."
     };
 }
 
@@ -78,5 +87,7 @@ pub(crate) use write_file_err;
 pub(crate) use json_parse_err;
 pub(crate) use empty_settings_err;
 pub(crate) use add_var_success;
+pub(crate) use var_added_already;
+pub(crate) use invalid_char;
 #[allow(dead_code)]
 pub(crate) use cmd_fail_start;

@@ -1,4 +1,4 @@
-use std::{path::{Path, PathBuf}, process::Command, fs::{self, File}};
+use std::{path::{Path, PathBuf}, process::Command, fs::{self}};
 use serde::{Deserialize, Serialize};
 
 use crate::errors::*;

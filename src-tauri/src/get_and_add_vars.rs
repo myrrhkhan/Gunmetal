@@ -46,13 +46,13 @@ pub fn add_var(key: String, var_submission: String) -> Result<String, String> {
     // check if variable is already there, if so, return
     let duplicate: bool = check_if_var_duplicate(&key, &var_submission);
     if duplicate {
-      return Ok(String::from("Variable has been added already"));
+      return Ok(String::from(var_added_already!()));
     }
     // Try to append variable
     let result = append(&key, &var_submission);
     return result;
   } else {
-      return Err(String::from("Invalid input, contains null character or is empty."));
+      return Err(String::from(invalid_char!()));
   }
 }
 
@@ -159,10 +159,10 @@ fn write_to_file (shell_path: String, key: &String, var_submission: &String) -> 
   
   // make string to add to end of file
   let export_cmd: String = format!(
-    "\nexport {}=${}:{}", 
+    "\nexport {}=\"{}\":${}", 
     &key, 
-    &key, 
-    &var_submission
+    &var_submission,
+    &key
   );
 
   file

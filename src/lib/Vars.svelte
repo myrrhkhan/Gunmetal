@@ -7,35 +7,32 @@
 
 	// gathers environment variables to display
 	async function getPath(): Promise<variableMap> {
-		let thing: variableMap = await invoke('get_vars');
-		return thing;
+		console.log("generating/regenerating");
+		let vars: variableMap = await invoke('get_vars');
+		return vars;
 	}
 
 	function whileAddingInput(key: String) {
-		console.log("box should now show");
 		if (keyBeingEdited == "") {
 			keyBeingEdited = key;
-			boxLabel = "Cancel";
 		} else {
 			removeBox();
 		}
-		console.log(key == keyBeingEdited);
 	}
 
 	function removeBox() {
 		keyBeingEdited = "";
 		varSubmission = "";
-		boxLabel = "Add Variable";
+		varsPromise = getPath(); // reload on submission
+		// TODO: find a way to only reload one of the thingies?
 	}
 
 	// adds a new environment variable
 	async function addVar(variable: String, submission: String): Promise<String> {
 		let message: String = "";
-		console.log("About to receive message")
 		await invoke('add_var', { key: variable, varSubmission: submission})
 			.then((return_val) => { message = return_val as string })
 			.catch((err_msg) => { message = err_msg });
-		console.log("about to alert");
 		alert(message);
 		// alert(message);
 		removeBox();
@@ -46,7 +43,6 @@
 
 	let keyBeingEdited: String = ""; // key that's being edited
 	let varSubmission: String; // environment variable being added
-	let boxLabel: String = "Add Variable";
 
 </script>
 
@@ -59,12 +55,14 @@
 		{#each values as value}
 			<li>{value}</li>
 		{/each}
-		<button on:click={() => whileAddingInput(key)}>{boxLabel}</button>
 		{#if key == keyBeingEdited}
+			<button on:click={() => whileAddingInput(key)}>Cancel</button>
 			<form>
 				<input bind:value={varSubmission} type="text">
 				<button on:click={() => addVar(key, varSubmission)}>Submit</button>
 			</form>
+		{:else}
+			<button on:click={() => whileAddingInput(key)}>Add Variable</button>
 		{/if}
 	{/each}
 {/await}
