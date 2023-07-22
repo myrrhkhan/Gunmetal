@@ -52,7 +52,7 @@ macro_rules! json_parse_err {
 }
 macro_rules! empty_settings_err {
   () => {
-    "Settings file is empty. Please fill out all settings in settings.json before trying again.\nsettings.json is either in /etc/varedit or ~/.config/varedit/"
+    "Settings file is empty. Please fill out all settings in settings.json before trying again.\nsettings.json is either in \"/etc/Environment Variable Editor/\" or \"~/.config/Environment Variable Editor/\""
   };
 }
 macro_rules! add_var_success {

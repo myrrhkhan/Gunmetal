@@ -99,11 +99,11 @@ fn append(key: &String, var_submission: &String) -> Result<String, String> {
 fn append(key: &String, var_submission: &String) -> Result<String, String> {
 
   // make settings file if not already made, return any errors
-  check_and_make_file(PathBuf::from("/etc/varedit/"), "settings.json")?;
+  check_and_make_file(PathBuf::from("/etc/Environment Variable Editor/"), "settings.json")?;
 
   // get shell profile path from settings
   let shell_string = gather_setting(
-    "/etc/varedit/settings.json", 
+    "/etc/Environment Variable Editor/settings.json", 
     "shell_profile"
   )?;
 
@@ -126,9 +126,9 @@ fn append(key: &String, var_submission: &String) -> Result<String, String> {
 
   // TODO clean this section up
   let mut path_to_dir: PathBuf = home_dir().unwrap();
-  path_to_dir.push(".config/varedit");
+  path_to_dir.push(".config/Environment Variable Editor");
   let mut path_to_settings = home_dir().unwrap();
-  path_to_settings.push(".config/varedit/settings.json");
+  path_to_settings.push(".config/Environment Variable Editor/settings.json");
 
   // make settings file if not already made, return any errors
   check_and_make_file(path_to_dir, "settings.json")?;
