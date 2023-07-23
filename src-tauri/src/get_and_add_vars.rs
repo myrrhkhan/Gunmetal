@@ -1,6 +1,6 @@
 use std::fs::{self};
 use std::io::Write;
-use std::{collections::HashMap, env};
+use std::{collections::HashMap};
 use std::path::PathBuf;
 use dirs::home_dir;
 use crate::errors::*;
@@ -10,15 +10,45 @@ use std::process::Command;
 
 #[tauri::command]
 pub fn get_vars() -> HashMap<String, Vec<String>> {
+  println!("calling again");
+  // TODO: update so that it does not panic?
 
   // create map for variables and entries
   let mut names_and_vars: HashMap<String, Vec<String>> = HashMap::new();
   
+  /*
+  Old method
   // procedure to save all keys and vals into map
   for (key, vals) in env::vars() {
     // convert string into vector by splitting, then map &str to String
     let entries: Vec<String> = vals.split(":").map(str::to_string).collect();
     names_and_vars.insert(key, entries);
+  }
+  */
+
+  // new method
+  let vars_output: std::process::Output = Command::new("env").output().unwrap(); // run env command
+  // convert output (variables) to string
+  let vars_string: String = String::from_utf8(vars_output.stdout)
+    .expect("Could not convert variables to a readable string");
+  // split lines so that split is just an individual variable and its values
+  let variables = vars_string.split("\n");
+  // iterate through each variable
+  for variable in variables.map(str::to_string) {
+    // split variable into the individual variable and its values
+    let strs = variable.split_once("=");
+    match strs {
+      None => continue,
+      Some((_, __)) => (),
+    }
+    let (key_str, vals_str) = strs.unwrap();
+    // convert key, values to strings
+    let key = String::from(key_str);
+    let vals_string = String::from(vals_str);
+    // split up vals into vector
+    let vals: Vec<String> = vals_string.split(":").map(str::to_string).collect();
+    names_and_vars.insert(key, vals);
+
   }
 
   return names_and_vars;

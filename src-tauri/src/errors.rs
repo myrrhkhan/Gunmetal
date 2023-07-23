@@ -22,7 +22,7 @@ macro_rules! make_file_err {
 macro_rules! profile_err {
     ($path:expr) => {
         format!(
-          "Could not open shell profile ({}). Please check that the shell profile setting points to the right file and try again.",
+          "Could not open shell profile ({}). Please check that the shell profile setting points to the right file (either is either in \"/etc/Environment Variable Editor/\" or \"~/.config/Environment Variable Editor/\") and try again.",
           $path
         )
     };
