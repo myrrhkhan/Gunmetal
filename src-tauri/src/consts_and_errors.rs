@@ -1,8 +1,21 @@
-macro_rules! construct_err_msg {
-  ($message:expr, $full_error:expr) => { 
-    format!("{}\nFull Error:\n{}", $message, $full_error) 
-  }
+macro_rules! mac_config_path {
+    () => {
+        "./config/Environment Variable Editor"
+    };
 }
+
+macro_rules! linux_config_path {
+    () => {
+        "/etc/Environment Variable Editor"
+    };
+}
+
+macro_rules! construct_err_msg {
+    ($message:expr, $full_error:expr) => {
+        format!("{}\nFull Error:\n{}", $message, $full_error)
+    };
+}
+
 macro_rules! mkdir_err {
     ($dir:expr) => {
         format!(
@@ -22,8 +35,10 @@ macro_rules! make_file_err {
 macro_rules! profile_err {
     ($path:expr) => {
         format!(
-          "Could not open shell profile ({}). Please check that the shell profile setting points to the right file (either is either in \"/etc/Environment Variable Editor/\" or \"~/.config/Environment Variable Editor/\") and try again.",
-          $path
+          "Could not open shell profile ({}). Please check that the shell profile setting points to the right file (either is either in {} or {}) and try again.",
+          $path,
+          mac_config_path!(),
+          linux_config_path!()
         )
     };
 }
@@ -38,16 +53,15 @@ macro_rules! settings_read_error {
 macro_rules! write_file_err {
     ($content:expr, $path:expr) => {
         format!(
-          "Could not write the message \"{}\" to file {}. Please write manually",
-          $content,
-          $path
+            "Could not write the message \"{}\" to file {}. Please write manually",
+            $content, $path
         )
     };
 }
 // the following macros don't take arguments, but i'm still using macros for the sake of consistency anyway
 macro_rules! json_parse_err {
     () => {
-      "Value not found in settings file. Please open the settings page and ensure that all settings are set. View help for more info." 
+      "Value not found in settings file. Please open the settings page and ensure that all settings are set. View help for more info."
     };
 }
 macro_rules! empty_settings_err {
@@ -67,7 +81,7 @@ macro_rules! var_added_already {
 }
 macro_rules! invalid_char {
     () => {
-      "Invalid input, contains null character or is empty."
+        "Invalid input, contains null character or is empty."
     };
 }
 
@@ -78,16 +92,18 @@ macro_rules! cmd_fail_start {
     };
 }
 
-pub(crate) use construct_err_msg;
-pub(crate) use mkdir_err;
-pub(crate) use make_file_err;
-pub(crate) use profile_err;
-pub(crate) use settings_read_error;
-pub(crate) use write_file_err;
-pub(crate) use json_parse_err;
-pub(crate) use empty_settings_err;
 pub(crate) use add_var_success;
-pub(crate) use var_added_already;
-pub(crate) use invalid_char;
 #[allow(dead_code)]
 pub(crate) use cmd_fail_start;
+pub(crate) use construct_err_msg;
+pub(crate) use empty_settings_err;
+pub(crate) use invalid_char;
+pub(crate) use json_parse_err;
+pub(crate) use linux_config_path;
+pub(crate) use mac_config_path;
+pub(crate) use make_file_err;
+pub(crate) use mkdir_err;
+pub(crate) use profile_err;
+pub(crate) use settings_read_error;
+pub(crate) use var_added_already;
+pub(crate) use write_file_err;
