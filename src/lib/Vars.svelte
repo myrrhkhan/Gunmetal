@@ -9,6 +9,7 @@
 	async function getPath(): Promise<variableMap> {
 		console.log("generating/regenerating");
 		let vars: variableMap = await invoke('get_vars');
+		// .catch((err_msg) => { alert(err_msg) })
 		return vars;
 	}
 

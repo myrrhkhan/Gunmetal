@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
+    env::current_dir,
     fs::{self},
     path::{Path, PathBuf},
     process::Command,
@@ -21,40 +22,28 @@ struct SettingsFields {
 /// ### Panics or Unwraps
 /// - when trying to convert an os string into a string
 /// - when converting the pathbuf into a string
-pub fn check_and_make_file(mut path_to_dir: PathBuf, filename: &str) -> Result<(), String> {
+pub fn check_and_make_file(path_to_dir: &str, filename: &str) -> Result<(), String> {
     // check if directory exists, if not make the directory
-    if !&path_to_dir.is_dir() {
-        // make a path to keep track of working directory
-        let mut current_dir: String = String::from("");
-
-        // iterate through folders and make them
-        for folder in &path_to_dir {
-            // add current folder to working directory
-            current_dir = current_dir + "/" + folder.to_str().unwrap();
-
-            // if directory doesn't exist, make it
-            if !Path::new(&current_dir).exists() {
-                Command::new("mkdir")
-                    .args([&current_dir])
-                    .output()
-                    .map_err(|err| construct_err_msg!(mkdir_err!(current_dir), err.to_string()))?;
-                // convert error to string and return
-            }
-        }
+    if !PathBuf::from(&path_to_dir).is_dir() {
+        Command::new("mkdir")
+            .args(["-p", &path_to_dir])
+            .output()
+            .map_err(|err| construct_err_msg!(mkdir_err!(&path_to_dir), err.to_string()))?;
     }
 
     // Add filename to make full string
-    path_to_dir.push(filename);
+    let mut full_path = PathBuf::from(&path_to_dir);
+    full_path.push(filename);
 
     // if a file doesn't exist, make the file or return the error
-    if !&path_to_dir.exists() {
-        fs::File::create(&path_to_dir).map_err(|err| {
+    if !full_path.exists() {
+        fs::File::create(&full_path).map_err(|err| {
             construct_err_msg!(
-                make_file_err!(&path_to_dir.clone().into_os_string().into_string().unwrap()),
+                make_file_err!(&full_path.clone().into_os_string().into_string().unwrap()),
                 err.to_string()
             )
         })?;
-        generate_json(&path_to_dir.to_str().unwrap())?;
+        generate_json(full_path.to_str().unwrap())?;
         return Err(String::from(empty_settings_err!()));
     }
 

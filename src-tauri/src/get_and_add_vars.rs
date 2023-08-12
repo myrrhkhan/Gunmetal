@@ -32,16 +32,15 @@ pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
     // find settings file
-    let config_path: PathBuf = if std::env::consts::OS == "macos" {
-        PathBuf::from(mac_config_path!())
+    let config_path: &str = if std::env::consts::OS == "macos" {
+        mac_config_path!()
     } else {
-        PathBuf::from(linux_config_path!())
+        linux_config_path!()
     };
     check_and_make_file(config_path, "settings.json")?; // return error if no settings file
 
-    let config_path_string = config_path.to_str().unwrap();
     let shell_profile_path = gather_setting(
-        format!("{}/settings.json", config_path_string).as_str(),
+        format!("{}/settings.json", config_path).as_str(),
         "shell_profile",
     )?;
 
@@ -54,52 +53,84 @@ pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
         names_and_vars.insert(key, entries);
     }
     // add shell file stuff to map as well
-    read_path(&mut names_and_vars, &shell_profile_path);
+    read_shell_profile(&mut names_and_vars, &shell_profile_path);
 
     return Ok(names_and_vars);
 }
 
-fn read_path(map: &mut HashMap<String, Vec<String>>, shell_profile_path: &String) {
+fn read_shell_profile(map: &mut HashMap<String, Vec<String>>, shell_profile_path: &String) {
     if let Ok(lines) = read_lines(&shell_profile_path) {
         for line_buf in lines {
             if let Ok(line) = line_buf {
                 if &line[..6] == "export" {
-                    let key_var_init = &line[7..].split("=").collect::<Vec<&str>>();
-                    let key = key_var_init[0];
-                    let var = key_var_init[1].split(":").collect::<Vec<&str>>();
-                    if var.len() == 1 {
-                        let var_ref = find_env_refs(String::from(var[0]), &map);
-                        let mut val_added: String = String::from("");
-                        match var_ref {
-                            Some(key) => {
-                                val_added = var[0].replace(&key, map.get(&key).unwrap()[0].as_str())
-                            }
-                            None => val_added = String::from(var[0]),
-                        }
-                    }
+                    evaluate_shell_cmd(line, map);
                 }
             }
         }
     }
 }
 
+fn evaluate_shell_cmd(line: String, map: &mut HashMap<String, Vec<String>>) {
+    let key_var_init = &line[7..].split("=").collect::<Vec<&str>>();
+    let key = String::from(key_var_init[0]);
+    let mut var_entries = key_var_init[1]
+        .split(":")
+        .into_iter()
+        .map(|entry| entry.to_string())
+        .collect::<Vec<String>>();
+    // if no split
+    if var_entries.len() == 1 {
+        var_entries[0] = modify_entries(&var_entries[0].clone(), map);
+        // add variable to hashmap
+        map.insert(key, var_entries);
+    } else {
+        let mut entry_to_add = String::from("");
+        for entry in &var_entries {
+            let (_, end) = entry.split_at(0);
+            if end != key {
+                entry_to_add = modify_entries(&entry, map);
+            }
+        }
+        if entry_to_add != String::from("") {
+            let mut current_entries = map.get(&key).unwrap().clone();
+            current_entries.push(entry_to_add);
+            map.insert(key, current_entries);
+        }
+    }
+}
+
 // TODO: replace naive approach with regex
-fn find_env_refs(var: String, map: &HashMap<String, Vec<String>>) -> Option<String> {
-    let mut reference = "";
+fn find_env_refs(var: &String) -> Option<String> {
+    let mut reference = String::from("");
     let mut add_var = false;
     for letter in var.chars() {
         if letter == '$' {
             add_var = true;
         } else if add_var {
-            reference = format!("{}{}", reference, letter).as_str();
+            reference = format!("{}{}", reference, letter);
         } else if letter == '/' {
             break;
         }
     }
-    match reference {
+    match reference.as_str() {
         "" => None,
         _ => Some(String::from(reference)),
     }
+}
+
+fn modify_entries(entry: &String, map: &HashMap<String, Vec<String>>) -> String {
+    // find references to other variables by searching for $
+    let reference_in_var = find_env_refs(entry);
+    // if reference found, replace
+    let var = entry;
+    match reference_in_var {
+        Some(key) => {
+            let key_replacement = map.get(&key).unwrap()[0].as_str();
+            var.replace(&key, key_replacement);
+        }
+        _ => (),
+    }
+    return var.to_string();
 }
 
 // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
@@ -150,7 +181,7 @@ pub fn add_var(key: String, var_submission: String) -> Result<String, String> {
 fn check_if_var_duplicate(key: &String, var_submission: &String) -> bool {
     let status: bool;
 
-    let map: HashMap<String, Vec<String>> = get_vars();
+    let map: HashMap<String, Vec<String>> = get_vars().unwrap();
     let entries_option: Option<&Vec<String>> = map.get(key);
 
     match entries_option {
@@ -182,10 +213,7 @@ fn append(key: &String, var_submission: &String) -> Result<String, String> {
 #[cfg(target_os = "linux")]
 fn append(key: &String, var_submission: &String) -> Result<String, String> {
     // make settings file if not already made, return any errors
-    check_and_make_file(
-        PathBuf::from("/etc/Environment Variable Editor/"),
-        "settings.json",
-    )?;
+    check_and_make_file("/etc/Environment Variable Editor/", "settings.json")?;
 
     // get shell profile path from settings
     let shell_string = gather_setting(
@@ -209,13 +237,13 @@ fn append(key: &String, var_submission: &String) -> Result<String, String> {
     // establish path to settings directory
 
     // TODO clean this section up
-    let mut path_to_dir: PathBuf = home_dir().unwrap();
+    let mut path_to_dir = home_dir().unwrap();
     path_to_dir.push(mac_config_path!());
     let mut path_to_settings = home_dir().unwrap();
     path_to_settings.push(format!("{}/settings.json", mac_config_path!()));
 
     // make settings file if not already made, return any errors
-    check_and_make_file(path_to_dir, "settings.json")?;
+    check_and_make_file(path_to_dir.to_str().unwrap(), "settings.json")?;
 
     // get shell profile path from settings
     let shell_string = gather_setting(path_to_settings.to_str().unwrap(), "shell_profile")?;
