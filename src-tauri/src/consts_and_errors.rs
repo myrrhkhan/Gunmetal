@@ -1,6 +1,15 @@
+macro_rules! home_dir {
+    () => {
+        dirs::home_dir()
+            .expect("Can't find home dir")
+            .to_str()
+            .expect("Can't change home dir to string")
+    };
+}
+
 macro_rules! mac_config_path {
     () => {
-        "./config/Environment Variable Editor"
+        ".config/Environment Variable Editor"
     };
 }
 
@@ -61,7 +70,7 @@ macro_rules! write_file_err {
 // the following macros don't take arguments, but i'm still using macros for the sake of consistency anyway
 macro_rules! json_parse_err {
     () => {
-      "Value not found in settings file. Please open the settings page and ensure that all settings are set. View help for more info."
+      "Value not found in settings file. Please open the settings page and ensure that all settings are set."
     };
 }
 macro_rules! empty_settings_err {
@@ -97,6 +106,7 @@ pub(crate) use add_var_success;
 pub(crate) use cmd_fail_start;
 pub(crate) use construct_err_msg;
 pub(crate) use empty_settings_err;
+pub(crate) use home_dir;
 pub(crate) use invalid_char;
 pub(crate) use json_parse_err;
 pub(crate) use linux_config_path;

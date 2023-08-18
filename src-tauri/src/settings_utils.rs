@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    env::current_dir,
     fs::{self},
-    path::{Path, PathBuf},
+    io::BufRead,
+    path::PathBuf,
     process::Command,
 };
 
@@ -11,6 +11,21 @@ use crate::consts_and_errors::*;
 #[derive(Deserialize, Serialize)]
 struct SettingsFields {
     shell_profile: String,
+}
+
+pub fn path_exists_combined_path(path: &str, make_file: bool) -> Result<(), String> {
+    let split_path = path.split("/").collect::<Vec<&str>>();
+    match split_path.len() {
+        1 => return path_exists("", path, make_file),
+        _ => {
+            let filename = split_path[split_path.len() - 1];
+            let mut path_to_dir = String::from("");
+            for i in 0..(split_path.len() - 1) {
+                path_to_dir = format!("{}/{}", &path_to_dir, &split_path[i]);
+            }
+            return path_exists(path_to_dir.as_str(), filename, make_file);
+        }
+    }
 }
 
 /// Check if a file exists, and if not, make one
@@ -22,7 +37,27 @@ struct SettingsFields {
 /// ### Panics or Unwraps
 /// - when trying to convert an os string into a string
 /// - when converting the pathbuf into a string
-pub fn check_and_make_file(path_to_dir: &str, filename: &str) -> Result<(), String> {
+pub fn path_exists(path_to_dir: &str, filename: &str, make_file: bool) -> Result<(), String> {
+    // Add filename to make full string
+    let mut full_path = PathBuf::from(&path_to_dir);
+    full_path.push(filename);
+
+    println!("{}", &full_path.to_str().unwrap());
+
+    if full_path.exists() {
+        return Ok(());
+    } else if make_file == false {
+        // if we don't wanna make file, return error saying file doesn't exist
+        // convert file name to string. if error, return error
+        let pathstr_option = &full_path.to_str();
+        match pathstr_option {
+            Some(pathstr) => return Err(format!("File {} does not exist.", pathstr)),
+            None => return Err(String::from("File does not exist. Error extracting the file's name, so filename might not be readable"))
+        }
+    }
+
+    // from here, we're making the file
+
     // check if directory exists, if not make the directory
     if !PathBuf::from(&path_to_dir).is_dir() {
         Command::new("mkdir")
@@ -30,24 +65,20 @@ pub fn check_and_make_file(path_to_dir: &str, filename: &str) -> Result<(), Stri
             .output()
             .map_err(|err| construct_err_msg!(mkdir_err!(&path_to_dir), err.to_string()))?;
     }
-
-    // Add filename to make full string
-    let mut full_path = PathBuf::from(&path_to_dir);
-    full_path.push(filename);
-
-    // if a file doesn't exist, make the file or return the error
-    if !full_path.exists() {
-        fs::File::create(&full_path).map_err(|err| {
-            construct_err_msg!(
-                make_file_err!(&full_path.clone().into_os_string().into_string().unwrap()),
-                err.to_string()
-            )
-        })?;
-        generate_json(full_path.to_str().unwrap())?;
-        return Err(String::from(empty_settings_err!()));
+    // generate the JSON and return error empty file
+    match &full_path.to_str() {
+        Some(pathstr) => {
+            fs::File::create(&full_path)
+                .map_err(|err| construct_err_msg!(make_file_err!(pathstr), err.to_string()))?;
+            generate_json(full_path.to_str().unwrap())?;
+            return Err(String::from(empty_settings_err!()));
+        }
+        None => {
+            return Err(String::from(
+                "Could not make a file. Could not convert path to file into a readable string.",
+            ))
+        }
     }
-
-    return Ok(());
 }
 
 /// Generates the JSON file with blank fields
