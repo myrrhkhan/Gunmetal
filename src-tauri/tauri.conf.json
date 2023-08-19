@@ -7,7 +7,7 @@
 		"distDir": "../build"
 	},
 	"package": {
-		"productName": "Environment Variable Editor",
+		"productName": "Gunmetal ENV Editor",
 		"version": "0.3.0"
 	},
 	"tauri": {

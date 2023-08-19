@@ -69,3 +69,5 @@
 	<p>Could not get variables</p>
 	<p>{error}</p>
 {/await}
+
+// future colorscheme with Gunmetal name: https://coolors.co/2d3142-bfc0c0-ffffff-ef8354-4f5d75
