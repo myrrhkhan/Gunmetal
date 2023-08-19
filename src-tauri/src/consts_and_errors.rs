@@ -94,7 +94,7 @@ macro_rules! invalid_char {
     };
 }
 
-#[allow(dead_code)]
+#[allow(unused_macros)]
 macro_rules! cmd_fail_start {
     () => {
         "Command failed to run"
@@ -102,7 +102,7 @@ macro_rules! cmd_fail_start {
 }
 
 pub(crate) use add_var_success;
-#[allow(dead_code)]
+#[allow(unused_imports)]
 pub(crate) use cmd_fail_start;
 pub(crate) use construct_err_msg;
 pub(crate) use empty_settings_err;

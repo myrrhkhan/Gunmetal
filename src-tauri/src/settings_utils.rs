@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self},
-    io::BufRead,
     path::PathBuf,
     process::Command,
 };
