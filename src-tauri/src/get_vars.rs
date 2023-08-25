@@ -1,4 +1,3 @@
-use crate::consts_and_errors::*;
 use crate::settings_utils::*;
 use std::collections::HashMap;
 use std::fs::{self};
@@ -30,11 +29,8 @@ pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
     // find settings file
-    let config_path = if std::env::consts::OS == "macos" {
-        format!("{}/{}", home_dir!(), mac_config_path!())
-    } else {
-        format!("{}/{}", home_dir!(), linux_config_path!())
-    };
+    let config_path = get_config_path()
+        .expect("Error, bug in code: used a section of code not intended for Windows users");
     path_exists(&config_path.as_str(), "settings.json", true)?; // return error if no settings file
 
     // get the path to the shell profile
@@ -49,7 +45,11 @@ pub fn get_vars() -> Result<HashMap<String, Vec<String>>, String> {
 
     for (key, vals) in std::env::vars() {
         let entries: Vec<String> = vals.split(":").map(str::to_string).collect();
+        // if key.as_str() != "PATH" {
         map.insert(key, entries);
+        // } else {
+        //     map.insert(String::from("PATH2"), entries);
+        // }
     }
 
     // modify map by adding stuff from shell profile

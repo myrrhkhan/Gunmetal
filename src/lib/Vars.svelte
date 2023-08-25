@@ -38,7 +38,13 @@
 		removeBox();
 		return message;
 	}
+
+	async function getShellLocation(): Promise<String> {
+		return invoke('get_shell_location');
+	}
 	
+	let shellLocationPromise = getShellLocation();
+
 	let varsPromise = getPath(); // promise of map containing all environment variables
 
 	let keyBeingEdited: String = ""; // key that's being edited
@@ -47,6 +53,10 @@
 </script>
 
 <h1>Your Computer's Environment Variables:</h1>
+
+{#await shellLocationPromise then location}
+	<p>Reading Environment Variables from {location}</p>
+{/await}
 
 {#await varsPromise then allVars}
 	{#each Object.keys(allVars) as key}

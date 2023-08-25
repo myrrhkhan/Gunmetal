@@ -95,6 +95,18 @@ fn generate_json(settings_path: &str) -> Result<(), String> {
     return write_result;
 }
 
+// Returns the path of the configuration file
+pub fn get_config_path() -> Result<String, String> {
+    let config_path = if std::env::consts::OS == "macos" {
+        Ok(format!("{}/{}", home_dir!(), mac_config_path!()))
+    } else if std::env::consts::OS == "linux" {
+        Ok(format!("{}/{}", home_dir!(), linux_config_path!()))
+    } else {
+        Err(String::from("Using Windows, no shell profile used."))
+    };
+    return config_path;
+}
+
 /// Reads the JSON settings file, finds the value for a setting, and returns it
 /// This program re-reads the JSON file every time a setting is needed in case the file is edited during runtime
 /// ### Arguments
