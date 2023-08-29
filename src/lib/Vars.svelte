@@ -50,6 +50,8 @@
 	let keyBeingEdited: String = ""; // key that's being edited
 	let varSubmission: String; // environment variable being added
 
+    // future colorscheme with Gunmetal name: https://coolors.co/2d3142-bfc0c0-ffffff-ef8354-4f5d75
+
 </script>
 
 <h1>Your Computer's Environment Variables:</h1>
@@ -80,4 +82,3 @@
 	<p>{error}</p>
 {/await}
 
-// future colorscheme with Gunmetal name: https://coolors.co/2d3142-bfc0c0-ffffff-ef8354-4f5d75
